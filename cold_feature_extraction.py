@@ -19,15 +19,15 @@ R_OUTER = 35.0
 K_S = np.arange(3, 8)
 
 class Cold():
-    def __init__(self):
-        self.sharpness_factor = 10
-        self.bordersize = 3
-        self.show_images = False
-        self.is_binary = False
+    def __init__(self,opt):
+        self.sharpness_factor = opt["sharpness_factor"]
+        self.bordersize = opt["bordersize"]
+        self.show_images = opt["show_images"]
+        self.is_binary = opt["is_binary"]
         
     def preprocess_binary_image(self, img_file, sharpness_factor = 10, bordersize = 3):
         im = Image.open(img_file)
-        
+        im = im.convert('1')
         enhancer = ImageEnhance.Sharpness(im)
         im_s_1 = enhancer.enhance(sharpness_factor)
         # plt.imshow(im_s_1, cmap='gray')
@@ -129,20 +129,5 @@ class Cold():
             
         return feature_vectors.flatten()
 
-
-if __name__ == '__name__':
-    import argparse
-    parser = argparse.ArgumentParser(description="")
-    parser.add_argument("--img_file", type=str, default=r"IMAGE FILE LOCATION")
-    parser.add_argument("--sharpness_factor", type=int, default=10)
-    parser.add_argument("--bordersize", type=int, default=3)
-    parser.add_argument("--show_images", type=bool, default=False)
-    parser.add_argument("--is_binary", type=bool, default=False)
-    opt = parser.parse_args()
-    
-    cold = Cold(opt)
-    feature_vectors = cold.get_cold_features(opt.img_file)
-    
-    print ("shape of feature vector: {}".format(feature_vectors.shape))
 
 
