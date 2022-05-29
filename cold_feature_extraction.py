@@ -25,8 +25,8 @@ class Cold():
         self.show_images = opt["show_images"]
         self.is_binary = opt["is_binary"]
         
-    def preprocess_binary_image(self, img_file, sharpness_factor = 10, bordersize = 3):
-        im = Image.open(img_file)
+    def preprocess_binary_image(self, img, sharpness_factor = 10, bordersize = 3):
+        im = Image.fromarray(img)
         im = im.convert('1')
         enhancer = ImageEnhance.Sharpness(im)
         im_s_1 = enhancer.enhance(sharpness_factor)
@@ -43,8 +43,8 @@ class Cold():
         )
         return bw_image, image
     
-    def preprocess_image(self, img_file, sharpness_factor = 10, bordersize = 3):
-        im = Image.open(img_file)
+    def preprocess_image(self, img, sharpness_factor = 10, bordersize = 3):
+        im = Image.fromarray(img)
         
         enhancer = ImageEnhance.Sharpness(im)
         im_s_1 = enhancer.enhance(sharpness_factor)
@@ -89,11 +89,11 @@ class Cold():
             plt.imshow(img2, cmap='gray')
         return contours
     
-    def get_cold_features(self, img_file, approx_poly_factor = 0.01):
+    def get_cold_features(self, img, approx_poly_factor = 0.01):
         if self.is_binary:
-            bw_image, _ = self.preprocess_binary_image(img_file, self.sharpness_factor, self.bordersize)
+            bw_image, _ = self.preprocess_binary_image(img, self.sharpness_factor, self.bordersize)
         else:
-            bw_image, _ = self.preprocess_image(img_file, self.sharpness_factor, self.bordersize)
+            bw_image, _ = self.preprocess_image(img, self.sharpness_factor, self.bordersize)
         contours = self.get_contour_pixels(bw_image)
         
         rho_bins_edges = np.log10(np.linspace(R_INNER, R_OUTER, N_RHO_BINS))
