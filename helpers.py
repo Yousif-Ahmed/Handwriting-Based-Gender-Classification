@@ -8,6 +8,8 @@ from cold_feature_extraction  import *
 
 labels = ["Males", "Females"]
 
+from sklearn.svm import SVC
+from sklearn.model_selection import GridSearchCV
 
 def read_data(filename, windows=True):
     X = []
@@ -29,6 +31,7 @@ def read_data(filename, windows=True):
                 img = cv2.resize(img, (2000, 1800), interpolation=cv2.INTER_AREA)
                 X.append(img)
                 Y.append(class_label)
+
             except Exception as e:
                 print(e)
 
@@ -94,8 +97,34 @@ def resized_images(data, width, height):
     dim = (width, height)
 
     for idx, img in enumerate(data):
+
         # data[idx] = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
         # resize image
         resized = cv2.resize(data[idx], dim, interpolation=cv2.INTER_AREA)
         out.append(resized)
     return out
+
+
+##########################################
+def LBPfeatures(images, radius, pointNum):
+    hist_LBP = []
+    for img in images:
+        # print(img)
+        if type(pointNum) == int and type(radius) == int:
+            lbp = local_binary_pattern(img, int(pointNum), int(radius), method="uniform")
+            (hist, _) = np.histogram(lbp.ravel(), bins=range(0, pointNum + 3), range=(0, pointNum + 2))
+            hist_LBP.append(hist)
+    return hist_LBP
+
+    #########################################
+
+def GridSearch_tuning(X_train, y_train):
+    param_grid = {'C': [0.1, 1, 10, 100], 'gamma': [1, 0.1, 0.01, 0.001, 0.00001, 10]}
+    # Make grid search classifier
+    clf_grid = GridSearchCV(SVC(kernel="rbf"), param_grid, verbose=1)
+    # Train the classifier
+    clf_grid.fit(X_train, y_train)
+    # extract the parameters
+    best_params = clf_grid.best_params_
+    # return the parameters
+    return best_params
