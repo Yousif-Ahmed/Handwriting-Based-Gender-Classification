@@ -5,6 +5,8 @@ from skimage.feature import hog, local_binary_pattern
 
 from hinge_feature_extraction import * 
 from cold_feature_extraction  import * 
+from sklearn.svm import  SVC
+from sklearn.model_selection import GridSearchCV
 
 labels = ["Males", "Females"]
 
