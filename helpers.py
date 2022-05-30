@@ -1,6 +1,7 @@
 import time
 import cv2
 import os
+from cv2 import HOUGH_MULTI_SCALE
 import numpy as np
 from skimage.feature import hog, local_binary_pattern
 
@@ -160,8 +161,8 @@ def model_pipeline_testing(filename ,model_name ):
     # loading trained models 
     model  = load_model(model_name)
     
-    hinge_f_vector=[]
-    cold_f_vector=[]
+    Hinge_f_vector=[]
+    Cold_f_vector=[]
     Hog_f_vector =[]
     
     currentDirectory = os.getcwd()
@@ -175,26 +176,24 @@ def model_pipeline_testing(filename ,model_name ):
                 
                 start = time.time()
                 # getting all features
-                hod_f , hinge_f , cold_f =extract_features([img], opt)
+                hog_f , hinge_f , cold_f =extract_features([img], opt)
                 #storing it in the feature vectors 
                 end = time.time()
                 
                 # adding image features 
-                Hog_f_vector.append(hod_f)
-                hinge_f_vector.append(hinge_f)
-                cold_f_vector.append(cold_f)
+                Hog_f_vector.append(hog_f)
+                Hinge_f_vector.append(hinge_f)
+                Cold_f_vector.append(cold_f)
                 
                 time_file.write(str(end-start) +"\n")
-                hinge_f_vector.append(hinge_f)
-                cold_f_vector.append(cold_f)
-                Hog_f_vector.append(hod_f)
             except Exception as e :
                     print (e)
                     
-    scaler = MinMaxScaler()
-    HOG_feature_scalad = scaler.fit_transform(Hog_f_vector)
-    COLD_feature_scaled  = scaler.fit_transform(cold_f_vector)
-    HINGE_feature_scaled = scaler.fit_transform(hinge_f_vector)
+    cold_scaler , hinge_scaler , hog_scaler =load_scaler()
+    
+    HOG_feature_scalad = hog_scaler.transform(Hog_f_vector)
+    COLD_feature_scaled  = cold_scaler.transform(Cold_f_vector)
+    HINGE_feature_scaled = hinge_scaler.transform(Hinge_f_vector)
 
     all_features = np.concatenate((HOG_feature_scalad, HINGE_feature_scaled), axis=1)
     all_features = np.concatenate((all_features, COLD_feature_scaled), axis=1)
@@ -207,3 +206,9 @@ def model_pipeline_testing(filename ,model_name ):
         result_file.write(str(i) +"\n")
     result_file.close()
     time_file.close()
+# #############################################
+def load_scaler():
+    cold_scaler = pickle.load(open('COLD_scaler.sav', 'rb'))
+    hinge_scaler = pickle.load(open('HINGE_scaler.sav', 'rb'))
+    hog_scaler = pickle.load(open('HOG_scaler.sav', 'rb'))
+    return cold_scaler , hinge_scaler , hog_scaler
