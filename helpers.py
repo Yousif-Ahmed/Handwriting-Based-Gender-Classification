@@ -4,13 +4,15 @@ import os
 from cv2 import HOUGH_MULTI_SCALE
 import numpy as np
 from skimage.feature import hog, local_binary_pattern
-
+import csv
 from hinge_feature_extraction import * 
 from cold_feature_extraction  import * 
 from sklearn.svm import  SVC
 from sklearn.model_selection import GridSearchCV
 from tqdm import tqdm
 from sklearn.preprocessing import MinMaxScaler
+from sklearn.metrics import classification_report, confusion_matrix
+import seaborn as sns
 
 labels = ["Males", "Females"]
 # feature extraction parameters
@@ -185,7 +187,7 @@ def model_pipeline_testing(filename ,model_name ):
                 Hinge_f_vector.append(hinge_f[0])
                 Cold_f_vector.append(cold_f[0])
                 
-                time_file.write(str(end-start) +"\n")
+                time_file.write(str(round((end-start),2)) +"\n")
             except Exception as e :
                     print (e)
                     
@@ -215,3 +217,54 @@ def load_scaler():
     hinge_scaler = pickle.load(open('HINGE_scaler.sav', 'rb'))
     hog_scaler = pickle.load(open('HOG_scaler.sav', 'rb'))
     return cold_scaler , hinge_scaler , hog_scaler
+
+
+###############################################
+def read_csv_data(fileName, isLabel=True):
+    rows = []
+    with open(fileName, 'r') as file:
+        csvreader = csv.reader(file, delimiter=',')
+        for row in csvreader:
+            if(isLabel==True):
+                rows.append(row[0])
+            else:
+                rows.append(row)
+        
+    if(isLabel==False):
+        data = np.array(rows).astype(np.float32)
+    else:
+        data = np.array(rows).astype(np.float32).astype(np.int32)
+    return data
+#######################Getting The Accuracy from a pre Trained Model#########################
+def loadModelAndGetAccuraccyLocalTesting(testingFeaturesScaledFileName,testingLabelsFileName, ClfFileName):
+    clfModel = pickle.load(open(ClfFileName, 'rb'))
+    all_test_features_scaled = read_csv_data(testingFeaturesScaledFileName, isLabel=False)
+    y_test=read_csv_data(testingLabelsFileName, isLabel=True)
+    test_pred = clfModel.predict(all_test_features_scaled)
+    print(f"Testing accuracy is %0.2f"%(np.sum(test_pred == y_test)/len(y_test) * 100))
+
+    return y_test, test_pred
+
+
+#############################################
+
+
+def model_evaluation (y_test , y_predict , Lable ="Testing"):
+    # testing our model using confusion matrix 
+    cf = confusion_matrix(y_test, y_predict)
+    cf_sum = cf.sum(axis = 1)[:, np.newaxis]
+    cf = np.round(cf / cf_sum * 100, 2)
+    float_formatter = "{:.2f}".format
+    np.set_printoptions(formatter={'float_kind':float_formatter})    
+    cr = 0.0
+    for i in range(0, cf.shape[0]):
+            cr += cf[i][i]
+
+    cr /= cf.shape[0]
+    print('classification rate '+Lable +' = '+ str(np.round(cr, 2)))
+
+    print(classification_report(y_test, y_predict))
+    print('Confusion Matrix ' + Lable + " Data")
+    
+    print(repr(cf))
+    sns.heatmap(cf, annot=True,  fmt='', cmap='Blues')
