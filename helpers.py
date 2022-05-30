@@ -271,7 +271,7 @@ def load_model (model_name):
     loaded_model = pickle.load(open(filename, 'rb'))
     return loaded_model
 ###########################################
-def model_pipeline_testing(filename ,model_name ):
+def model_pipeline_testing(filename ,model_name, windows=True):
     '''
         This function responsible for testing our models
         we have to svm models one for cold feature and one for hinge feature 
@@ -288,7 +288,10 @@ def model_pipeline_testing(filename ,model_name ):
     Hog_f_vector =[]
     
     currentDirectory = os.getcwd()
-    directory = filename+"\\"
+    if windows:
+        directory = filename + "\\"
+    else:
+        directory = filename + "/"
     path =os.path.join(currentDirectory, directory)
     for imagename in tqdm(os.listdir(path)):
             try:
@@ -333,9 +336,9 @@ def model_pipeline_testing(filename ,model_name ):
     time_file.close()
 # #############################################
 def load_scaler():
-    cold_scaler = pickle.load(open('COLD_scaler.sav', 'rb'))
-    hinge_scaler = pickle.load(open('HINGE_scaler.sav', 'rb'))
-    hog_scaler = pickle.load(open('HOG_scaler.sav', 'rb'))
+    cold_scaler = pickle.load(open('models/COLD_scaler.sav', 'rb'))
+    hinge_scaler = pickle.load(open('models/HINGE_scaler.sav', 'rb'))
+    hog_scaler = pickle.load(open('models/HOG_scaler.sav', 'rb'))
     return cold_scaler , hinge_scaler , hog_scaler
 
 
