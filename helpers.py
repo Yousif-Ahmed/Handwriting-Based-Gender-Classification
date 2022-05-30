@@ -181,16 +181,19 @@ def model_pipeline_testing(filename ,model_name ):
                 end = time.time()
                 
                 # adding image features 
-                Hog_f_vector.append(hog_f)
-                Hinge_f_vector.append(hinge_f)
-                Cold_f_vector.append(cold_f)
+                Hog_f_vector.append(hog_f[0])
+                Hinge_f_vector.append(hinge_f[0])
+                Cold_f_vector.append(cold_f[0])
                 
                 time_file.write(str(end-start) +"\n")
             except Exception as e :
                     print (e)
                     
     cold_scaler , hinge_scaler , hog_scaler =load_scaler()
-    
+    print (np.shape(Hog_f_vector))
+    print (np.shape(Cold_f_vector))
+    print(np.shape(Hinge_f_vector))
+
     HOG_feature_scalad = hog_scaler.transform(Hog_f_vector)
     COLD_feature_scaled  = cold_scaler.transform(Cold_f_vector)
     HINGE_feature_scaled = hinge_scaler.transform(Hinge_f_vector)
