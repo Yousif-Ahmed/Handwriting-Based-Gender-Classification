@@ -208,7 +208,7 @@ def model_pipeline_testing(filename ,model_name ):
     y_pred =model.predict(all_features)
     
     for i in y_pred:
-        result_file.write(str(i) +"\n")
+        result_file.write(str(1-i) +"\n")
     result_file.close()
     time_file.close()
 # #############################################
