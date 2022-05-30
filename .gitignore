@@ -1,3 +1,5 @@
 __pycache__
 .ipynb_checkpoints
 data_set
+test_classes.csv
+test.csv
