@@ -130,3 +130,120 @@ def GridSearch_tuning(X_train, y_train):
     best_params = clf_grid.best_params_
     # return the parameters
     return best_params
+
+############################################
+
+
+
+def evaluate(results):
+    """
+    Visualization code to display results of various learners.
+    
+    inputs:
+      - results: a dict containing different learners result ['train_time', 'acc_train', 'f_train', 'pred_time', 'acc_test', 'f_test']
+    """
+  
+    # Create figure
+    fig, ax = plt.subplots(2, 3, figsize = (15,9))
+
+    # Constants
+    bar_width = 0.3
+    colors = ['#A00000','#00A0A0','#00A000']
+    
+    # Super loop to plot four panels of data
+    for k, learner in enumerate(results.keys()):
+        for j, metric in enumerate(['train_time', 'acc_train', 'f_train', 'pred_time', 'acc_test', 'f_test']):
+            for i in np.arange(3):
+                
+                # Creative plot code
+                ax[j//3, j%3].bar(k*bar_width, results[learner][metric], width = bar_width, color = colors[k])
+                
+    # Add unique y-labels
+    ax[0, 0].set_ylabel("Time (in seconds)")
+    ax[0, 1].set_ylabel("Accuracy Score")
+    ax[0, 2].set_ylabel("F-score")
+    ax[1, 0].set_ylabel("Time (in seconds)")
+    ax[1, 1].set_ylabel("Accuracy Score")
+    ax[1, 2].set_ylabel("F-score")
+    
+    # Add x-labels
+    ax[1, 0].set_xlabel("Training set sizes")
+    ax[1, 1].set_xlabel("Training set sizes")
+    ax[1, 2].set_xlabel("Training set sizes")
+    
+    # Add titles
+    ax[0, 0].set_title("Model Training")
+    ax[0, 1].set_title("Accuracy Score on Training Subset")
+    ax[0, 2].set_title("F-score on Training Subset")
+    ax[1, 0].set_title("Model Predicting")
+    ax[1, 1].set_title("Accuracy Score on Testing Set")
+    ax[1, 2].set_title("F-score on Testing Set")
+    
+    
+    # Set y-limits for score panels
+    ax[0, 1].set_ylim((0, 1))
+    ax[0, 2].set_ylim((0, 1))
+    ax[1, 1].set_ylim((0, 1))
+    ax[1, 2].set_ylim((0, 1))
+
+    # Create patches for the legend
+    patches = []
+    for i, learner in enumerate(results.keys()):
+        patches.append(mpatches.Patch(color = colors[i], label = learner))
+    plt.legend(handles = patches, bbox_to_anchor = (-.80, 2.53), \
+               loc = 'upper center', borderaxespad = 0., ncol = 3, fontsize = 'x-large')
+    
+    # Aesthetics
+    plt.suptitle("Performance Metrics for Three Supervised Learning Models", fontsize = 16, y = 1.10)
+    fig.tight_layout(pad=3.0)
+    fig.show()    
+####################################################
+
+def train_predict(learner, X_train, y_train, X_test, y_test): 
+    '''
+    inputs:
+       - learner: the learning algorithm to be trained and predicted on
+       - X_train: features training set
+       - y_train: income training set
+       - X_test: features testing set
+       - y_test: income testing set
+    '''
+    
+    results = {}
+    
+    # Fit the learner to the training data using slicing with 'sample_size'
+    start = time() # Get start time
+    learner = learner.fit(X_train, y_train)
+    end = time() # Get end time
+    
+    # Calculate the training time
+    results['train_time'] = end-start
+        
+    # Get the predictions on the test set(X_test),
+    #       then get predictions on the first 300 training samples(X_train)
+    start = time() # Get start time
+    predictions_test = learner.predict(X_test)
+    end = time() # Get end time
+
+    predictions_train = learner.predict(X_train)
+
+    # Calculate the total prediction time
+    results['pred_time'] = end-start
+            
+    # Compute accuracy on the first 300 training samples
+    results['acc_train'] = accuracy_score(y_train, predictions_train)
+        
+    # Compute accuracy on test set 
+    results['acc_test'] = accuracy_score(y_test, predictions_test)
+    
+    # Compute F-score on the the first 300 training samples
+    results['f_train'] = fbeta_score(y_train, predictions_train, beta = 0.5)
+        
+    # Compute F-score on the test set
+    results['f_test'] = fbeta_score(y_test, predictions_test, beta = 0.5)
+       
+    # Success
+    print("{} trained.".format(learner.__class__.__name__))
+        
+    # Return the results
+    return results
